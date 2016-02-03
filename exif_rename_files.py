@@ -47,7 +47,7 @@ NORMAL = 1
 VERBOSE = 2
 
 nGlobalVerbosity = 1
-lLog = []
+lLog = ["Output log of exif_rename_files.py"]
 
 def my_print(sMessage, nMessageVerbosity=NORMAL):
    """
@@ -78,7 +78,7 @@ def get_images_path(sDirectory, bRecursive):
 
    # If the recursivity is not asked, simply list the files in the directory
    # Took the recipe here: http://ur1.ca/ogdez
-   my_print("Looking for files in" + str(FILETYPE), VERBOSE)
+   my_print("Looking for image files with extension in: " + str(FILETYPE), VERBOSE)
    if not bRecursive:
       for file in os.listdir(sDirectory):
          sExtension = os.path.splitext(file)[1]
@@ -253,8 +253,17 @@ def copytree(src, dst, symlinks = False, ignore = None):
          shutil.copy2(s, d)
 
       
+def write_log(sPath):
+   """
+   Write the log written in the global list lLog in the provided path.
+   """
+
+   f = open(sPath, 'w')
+   f.writelines([sString+os.linesep for sString in lLog])
+   f.close()
+
 def exif_rename_files(sInputDirectory, sOuputDirectory=None, bRecursiveInput=False, bCopyTree=False, \
-                      bMove=False, bNoClubber=False, nVerbosity=1):
+                      bMove=False, bNoClubber=False, sLogPath=None, bTest=False):
    """
    Rename the files in sInputDirectory according to the EXIF information.
    Name of the file is of the form: YYYY-MM-DD_HHmm[_NN].jpg
@@ -285,18 +294,23 @@ def exif_rename_files(sInputDirectory, sOuputDirectory=None, bRecursiveInput=Fal
    for sOldPath in dOldNewPathUnique.keys():
       sNewPath = dOldNewPathUnique[sOldPath]
       if bNoClobber and os.path.exists(sNewPath):
-         my_print ("File %s already exists and --no-clobber option activated. Skipping %s." \
+         my_print ("File '%s' already exists and --no-clobber option activated. Skipping '%s'." \
                    % (sNewPath, sOldPath))
       else:
          my_print (sMode + " image %s/%s\r" % (i,nNbrImages))
          my_print ("\t %s --> %s" % (sOldPath, sNewPath))
-         if not bMove:
+         if bTest :
+            my_print("----\n Test mode is activated: no operation is done")
+         elif not bMove:
             shutil.copy2(sOldPath, sNewPath)
          else:
             shutil.movefile(sOldPath, sNewPath)
-      print "----"
+      my_print ("----")
       i = i + 1
          
+   # Mettre le tout dans le log
+   if sLogPath is not None:
+      write_log(sLogPath)
 
 ############################################################
 # exif_rename_files in Command line
@@ -354,7 +368,7 @@ def get_command_line():
    parser.add_option("--recursive", "-r", dest="Recursive", \
                      help="Look for files in the directory and its subfolders.",\
                      action="store_true", default=False)
-   parser.add_option("--log", "-l", dest="/Log/file.txt", \
+   parser.add_option("--log", "-l", dest="LogFile", \
                      help="Write all the logging information in the identified file",\
                      action="store", type="string", default=None)
    parser.add_option("--verbose", "-v", dest="Verbosity", \
@@ -376,6 +390,31 @@ def get_command_line():
    if options.OutputDirectory is not None and not os.path.isdir(options.OutputDirectory):
       print "Error: Directory '%s' provided in '--output-directory' does not exist or is not a directory. Please provide a valid output directory. Exiting." % (options.OutputDirectory)
       exit (3)
+
+   # Check if the log file can be written
+   if options.LogFile is not None:
+      
+      # Path is the current directory and a manipulation must be done to avoid an error while checking if the 
+      # file can be written. Absolute path is then given instead of relative path in the working directory.
+      sLogFile = options.LogFile
+      if (os.path.dirname(options.LogFile)) == "":
+         sLogFile = os.path.join(os.path.dirname(os.path.abspath(__file__)), options.LogFile)
+      
+      # If the file exists
+      if os.path.exists(sLogFile):
+         if os.access(sLogFile, os.W_OK):
+            print"Log file '%s' exists and will be overwritten" % (sLogFile)
+         else:
+            print "Error: Log path '%s' exists but can not be overwritten. Fix this error and retry. Exiting." \
+               % (sLogFile)
+            exit (4)
+      # If the file does not exist
+      elif os.access(os.path.dirname(sLogFile), os.W_OK):
+         print "Log file will be written in '%s'"
+      else:
+         print "Error: Log path '%s' provided in '--log' and cannot be written. Please provide a valid file path. Exiting." % (sLogFile)
+         exit (5)
+      
       
    # Set the global verbosity
    global nGlobalVerbosity
@@ -390,13 +429,14 @@ def get_command_line():
    my_print("Verbosity level is set to: " + str(nGlobalVerbosity), nMessageVerbosity=VERBOSE)
       
    return (options.InputDirectory, options.OutputDirectory, options.Recursive, \
-           options.CopyTree, options.Move, options.NoClobber)
+           options.CopyTree, options.Move, options.NoClobber, options.LogFile, options.Test)
 
 
 
 if __name__ == "__main__":
 
-   (sInputDirectory, sOutputDirectory, bRecursive, bCopyTree, bMove, bNoClobber) = get_command_line()
+   (sInputDirectory, sOutputDirectory, bRecursive, bCopyTree, bMove, bNoClobber,  sLogFile, bTest)\
+      = get_command_line()
 
-   exif_rename_files(sInputDirectory, sOutputDirectory, bRecursive, bCopyTree, bMove, bNoClobber)
+   exif_rename_files(sInputDirectory, sOutputDirectory, bRecursive, bCopyTree, bMove, bNoClobber, sLogFile, bTest)
 
