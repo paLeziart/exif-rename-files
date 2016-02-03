@@ -147,8 +147,8 @@ def create_new_image_path(dExifImage, sInputDirectory, sOuputDirectory, bCopyTre
    lPathOld = dExifImage.keys()
    lPathOld.sort()
    dOldNewPath = {}
-   # If there is not destination, the images are copy/overwritten in the same directory than the input
-   if sOuputDirectory is None or not bCopyTree:
+   # If there is no destination, the images are copy/overwritten in the same directory than the input
+   if sOuputDirectory is None:
       for sPathOld in lPathOld:
          sPathNew = create_path_with_exif(sPathOld,  dExifImage[sPathOld])
          if sPathNew is not None:
@@ -284,6 +284,7 @@ def exif_rename_files(sInputDirectory, sOuputDirectory=None, bRecursiveInput=Fal
    # If requested, copy the input tree in the output directory
    if bCopyTree:
       copytree(sInputDirectory, sOuputDirectory, ignore=ignore_files)
+
    # Rename files
    i = 1
    nNbrImages = len(dOldNewPathUnique.keys())
