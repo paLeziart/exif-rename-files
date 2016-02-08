@@ -318,72 +318,43 @@ def exif_rename_files(sInputDirectory, sOuputDirectory=None, bRecursiveInput=Fal
 #
 #
 
-import optparse
-
-def check_required (parser, opt):
-   """
-   Extention of class OptionParser for mandatory argument.
-   Comes from
-   http://www.python.org/doc/2.3.4/lib/optparse-extending-examples.html
-
-   @type parser:  OptionParser
-   @param parser: Parser containing the values in the command line
-   @type opt: string
-   @param opt: option to check if it is required.
-   """
-   option = parser.get_option(opt)
-   # Assumes the option's 'default' is set to None!
-   if getattr(parser.values, option.dest) is None:
-      sError = "ERROR: " + opt +\
-               " parameter is missing\n Please try " + \
-               sys.argv[0] + " --help for all the options\n"
-      sys.stderr.write(sError)
-      sys.exit(1)
+import argparse
 
 def get_command_line():
    """
    Parse the command line and perform all the checks.
    """
-   # Parse the command line
-   parser = optparse.OptionParser(usage="%prog --input-directory InputDirectory [--output-directory OutputDirectory [--copy-directory-tree]] [--test] [--move] [--no-clobber] [--recursive] [--log=log.txt] [--verbose] [--silent]",\
-                                  version="exif_rename_files version: " + str(VERSION))
 
-   parser.add_option("--input-directory", "-d", dest="InputDirectory", \
+   parser = argparse.ArgumentParser(prog='PROG', prefix_chars='-')
+   parser.add_argument("--input-directory", "-d", dest="InputDirectory", \
                      help="Directory where the jpg/JPG files will be searched for renaming",\
-                     action="store", type="string", default=None)
-   parser.add_option("--output-directory", "-o", dest="OutputDirectory", \
+                       action="store", type=str, default=None, required=True)
+   parser.add_argument("--output-directory", "-o", dest="OutputDirectory", \
                      help="Optionnal: Directory where the image files will be written",\
-                     action="store", type="string", default=None)   
-   parser.add_option("--test", "-t", dest="Test", \
-                     help="Perform the operation but do not move or copy the files, simply log the changes that would be done",\
-                     action="store_true", default=False)
-   parser.add_option("--copy-directory-tree", "-C", dest="CopyTree", \
+                     action="store", type=str, default=None)   
+   parser.add_argument("--test", "-t", dest="Test", \
+                     help="Perform the operation but do not move or copy the files, simply log the changes that would be done", action="store_true", default=False)
+   parser.add_argument("--copy-directory-tree", "-C", dest="CopyTree",  \
                      help="Copy the directory tree in the output directory, to mimic the input sub-directories",\
                      action="store_true", default=False)
-   parser.add_option("--move", "-m", dest="Move", \
+   parser.add_argument("--move", "-m", dest="Move", \
                      help="Move the files, instead of copying, into the EXIF format date",\
                      action="store_true", default=False)
-   parser.add_option("--no-clobber", "-n", dest="NoClobber", \
+   parser.add_argument("--no-clobber", "-n", dest="NoClobber", \
                      help=" Do not overwrite an  existing  file",\
                      action="store_true", default=False)
-   parser.add_option("--recursive", "-r", dest="Recursive", \
+   parser.add_argument("--recursive", "-r",  dest="Recursive", \
                      help="Look for files in the directory and its subfolders.",\
                      action="store_true", default=False)
-   parser.add_option("--log", "-l", dest="LogFile", \
+   parser.add_argument("--log", "-l", dest="LogFile", \
                      help="Write all the logging information in the identified file",\
-                     action="store", type="string", default=None)
-   parser.add_option("--verbose", "-v", dest="Verbosity", \
+                     action="store", type=str, default=None)
+   parser.add_argument("--verbose", "-v", dest="Verbosity", \
                      help="Output is verbose.", action="store_true", default=False)
-   parser.add_option("--silent", "-s", dest="Silent", \
+   parser.add_argument("--silent", "-s", dest="Silent", \
                      help="No output on terminal.", action="store_true", default=False)
    # Parse the args
-   (options, args) = parser.parse_args()
-
-
-   # Check if all mandatory argument are here:
-   for sOption in ["input-directory"]:
-      sLongOption = "--" + sOption
-      check_required(parser, sLongOption)
+   options = parser.parse_args()
 
    if options.CopyTree and options.OutputDirectory is None:
       print "Error: option '--copy-recursive-tree' should be used with '--output-directory'. Please provide an output directory or do not use this option. Exiting."
@@ -428,6 +399,9 @@ def get_command_line():
    else:
       nGlobalVerbosity = NORMAL
    my_print("Verbosity level is set to: " + str(nGlobalVerbosity), nMessageVerbosity=VERBOSE)
+
+   print (options.InputDirectory, options.OutputDirectory, options.Recursive, \
+           options.CopyTree, options.Move, options.NoClobber, options.LogFile, options.Test)
       
    return (options.InputDirectory, options.OutputDirectory, options.Recursive, \
            options.CopyTree, options.Move, options.NoClobber, options.LogFile, options.Test)
