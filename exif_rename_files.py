@@ -106,7 +106,7 @@ def get_images_with_exif(lPathImages):
    my_print("----",  nMessageVerbosity=VERBOSE)
    my_print("Getting EXIF information from files", VERBOSE)
    lPathImages.sort()
-   dExifImage = {}
+   dExif = {}
    i = 1
    for sImagePath in lPathImages:
       my_print ('Processing image %s/%s: %s\r' % \
@@ -116,13 +116,13 @@ def get_images_with_exif(lPathImages):
       try:
          tags = exifread.process_file(f, strict=True)
          sExifDate = str(tags["EXIF DateTimeOriginal"])
-         dExifImage[sImagePath] = sExifDate
+         dExif[sImagePath] = sExifDate
       except (KeyError), inst:
          my_print ("No EXIF information found in file '" + sImagePath + "'")
          my_print ("Skipping.")
       my_print("----")
 
-   return dExifImage
+   return dExif
 
 def create_path_with_exif(sPath, sExif):
    """
@@ -139,20 +139,20 @@ def create_path_with_exif(sPath, sExif):
 
    return sPathNew
    
-def create_new_image_path(dExifImage, sInputDirectory, sOuputDirectory, bCopyTree):
+def create_new_image_path(dExif, sInputDirectory, sOuputDirectory, bCopyTree):
    """
    Based on the input path, the Exif information and the options, create the new path for the images.
    """
 
-   lPathOld = dExifImage.keys()
+   lPathOld = dExif.keys()
    lPathOld.sort()
-   dOldNewPath = {}
+   dNewPathRaw = {}
    # If there is no destination, the images are copy/overwritten in the same directory than the input
    if sOuputDirectory is None:
       for sPathOld in lPathOld:
-         sPathNew = create_path_with_exif(sPathOld,  dExifImage[sPathOld])
+         sPathNew = create_path_with_exif(sPathOld,  dExif[sPathOld])
          if sPathNew is not None:
-            dOldNewPath[sPathOld] = sPathNew
+            dNewPathRaw[sPathOld] = sPathNew
    else: # Recreate the same tree in the output
       sDirToRemove = os.path.dirname(sInputDirectory)
       for sPathOld in lPathOld:
@@ -160,22 +160,22 @@ def create_new_image_path(dExifImage, sInputDirectory, sOuputDirectory, bCopyTre
          sSubDirectory = os.path.dirname(sPathOld).replace(sDirToRemove,"")[1:]
          sNewDirectory = os.path.join(sOuputDirectory, sSubDirectory)
          sPathNew =  create_path_with_exif(os.path.join(sNewDirectory,os.path.basename(sPathOld)),\
-                                           dExifImage[sPathOld])
+                                           dExif[sPathOld])
          if sPathNew is not None:
-            dOldNewPath[sPathOld] = sPathNew
+            dNewPathRaw[sPathOld] = sPathNew
 
-   return dOldNewPath
+   return dNewPathRaw
          
-def get_unique_path_for_images(dOldNewPathWithPossibleCollision):
+def get_unique_path_for_images(dNewPathRawWithPossibleCollision):
    """
-   Identifying the collision for new path being the same in the dictionnary dOldNewPathWithPossibleCollision
+   Identifying the collision for new path being the same in the dictionnary dNewPathRawWithPossibleCollision
    To avoid the collision, add "_N" before the extension.
    """
    
    my_print ("Checking uniqueness of output file name", VERBOSE)
-   dOldNewPathUnique = {}
+   dNewPathUnique = {}
    dNewOldPath = {}
-   for k, v in dOldNewPathWithPossibleCollision.iteritems():
+   for k, v in dNewPathRawWithPossibleCollision.iteritems():
     dNewOldPath.setdefault(v, []).append(k)
     
    for sNewPath in dNewOldPath.keys():
@@ -187,7 +187,7 @@ def get_unique_path_for_images(dOldNewPathWithPossibleCollision):
                       % (sNewPath))
             my_print ("----")
          else: 
-            dOldNewPathUnique[dNewOldPath[sNewPath][0]] = sNewPath
+            dNewPathUnique[dNewOldPath[sNewPath][0]] = sNewPath
             my_print ("EXIF date is unique, renaming\n %s --> %s" % (dNewOldPath[sNewPath], sNewPath), VERBOSE)
             my_print ("----", VERBOSE)
       else:
@@ -207,12 +207,12 @@ def get_unique_path_for_images(dOldNewPathWithPossibleCollision):
                          (sNewImagePathUnique))
                my_print ("----")
             else:
-               dOldNewPathUnique[sOldImagePathWithSameExif] = sNewImagePathUnique
+               dNewPathUnique[sOldImagePathWithSameExif] = sNewImagePathUnique
             i = i + 1
             my_print ("Renaming\n %s --> %s" % (sOldImagePathWithSameExif,sNewImagePathUnique))
          my_print ("----")
 
-   return dOldNewPathUnique
+   return dNewPathUnique
 
 def ignore_files(dir, files):
    """
@@ -261,39 +261,19 @@ def write_log(sPath):
    f = open(sPath, 'w')
    f.writelines([sString+os.linesep for sString in lLog])
    f.close()
-
-def exif_rename_files(sInputDirectory, sOuputDirectory=None, bRecursiveInput=False, bCopyTree=False, \
-                      bMove=False, bNoClubber=False, sLogPath=None, bTest=False):
+   
+def duplicate_images(dPath):
    """
-   Rename the files in sInputDirectory according to the EXIF information.
-   Name of the file is of the form: YYYY-MM-DD_HHmm[_NN].jpg
+   Here is the place where the images file are duplicated, copied or moved.
    """
-
-   # Get all the images path
-   lPathImages = get_images_path(sInputDirectory, bRecursiveInput)
-
-   # Extract the EXIF information for all images
-   dExifImage = get_images_with_exif(lPathImages)
-
-   # Create the path where the file will be copied
-   dOldNewPath = create_new_image_path(dExifImage, sInputDirectory, sOuputDirectory, bCopyTree)
-
-   # Remove any possible collision by adding a suffix in the file name of image having the same Exif and destination
-   dOldNewPathUnique = get_unique_path_for_images(dOldNewPath)
-
-   # If requested, copy the input tree in the output directory
-   if bCopyTree:
-      copytree(sInputDirectory, sOuputDirectory, ignore=ignore_files)
-
-   # Rename files
    i = 1
-   nNbrImages = len(dOldNewPathUnique.keys())
+   nNbrImages = len(dPath.keys())
    if bMove:
       sMode = "Move"
    else:
       sMode = "Copy"
-   for sOldPath in dOldNewPathUnique.keys():
-      sNewPath = dOldNewPathUnique[sOldPath]
+   for sOldPath in dPath.keys():
+      sNewPath = dPath[sOldPath]
       if bNoClobber and os.path.exists(sNewPath):
          my_print ("File '%s' already exists and --no-clobber option activated. Skipping '%s'." \
                    % (sNewPath, sOldPath))
@@ -308,6 +288,33 @@ def exif_rename_files(sInputDirectory, sOuputDirectory=None, bRecursiveInput=Fal
             shutil.movefile(sOldPath, sNewPath)
       my_print ("----")
       i = i + 1
+   
+
+def exif_rename_files(sInputDirectory, sOuputDirectory=None, bRecursiveInput=False, bCopyTree=False, \
+                      bMove=False, bNoClubber=False, sLogPath=None, bTest=False):
+   """
+   Rename the files in sInputDirectory according to the EXIF information.
+   Name of the file is of the form: YYYY-MM-DD_HHmm[_NN].jpg
+   """
+
+   # Get all the images path
+   lPathImages = get_images_path(sInputDirectory, bRecursiveInput)
+
+   # Extract the EXIF information for all images
+   dExif = get_images_with_exif(lPathImages)
+
+   # Create the path where the file will be copied
+   dNewPathRaw = create_new_image_path(dExif, sInputDirectory, sOuputDirectory, bCopyTree)
+
+   # Remove any possible collision by adding a suffix in the file name of image having the same Exif and destination
+   dNewPathUnique = get_unique_path_for_images(dNewPathRaw)
+
+   # If requested, copy the input tree in the output directory
+   if bCopyTree:
+      copytree(sInputDirectory, sOuputDirectory, ignore=ignore_files)
+
+   # Duplicate files
+   duplicate_images(dNewPathUnique)
          
    # Mettre le tout dans le log
    if sLogPath is not None:
