@@ -99,7 +99,6 @@ def get_images_path(lInput, bRecursive):
    """
    lPathImages = []
    dPathImage = {} # Key is the path, value is the original directory in the input
-
    # Check if the directory exists
    for sPath in lInput:
       # If input is a directory and it does not exist, we skip it
@@ -164,7 +163,6 @@ def create_path_with_exif(sPath, sExif, bCpImageNoExif):
       # Check if the file are not already been renamed correctly
       if sPathNew == sPath:
          my_print ("Warning: File is already in the right format. Skipping '%s'" % (sPath))
-         return None
    elif bCpImageNoExif:
        sPathNew = sPath
 
