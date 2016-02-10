@@ -42,9 +42,9 @@ FILETYPE= [".jpg", ".JPG"]
 ## 0 Silent mode
 ## 1 Normal mode
 ## 2 Full debug
-SILENT = 0
-NORMAL = 1
-VERBOSE = 2
+SILENT= 0
+NORMAL= 1
+VERBOSE= 2
 
 nGlobalVerbosity = 1
 lLog = ["Output log of exif_rename_files.py"]
@@ -114,7 +114,7 @@ def get_images_path(lInput, bRecursive):
 
    return dPathImage
  
-def get_images_with_exif(lPathImages):
+def get_images_with_exif(lPathImages, bCpImageNoExif=False):
    """
    Inspect the images in list and return a dictionnary including:
    * key: image path
@@ -140,12 +140,16 @@ def get_images_with_exif(lPathImages):
          dExif[sImagePath] = sExifDate
       except (KeyError), inst:
          my_print ("No EXIF information found in file '" + sImagePath + "'")
-         my_print ("Skipping.")
+         if bCpImageNoExif:
+            dExif[sImagePath] = None
+         else:
+            my_print ("Skipping.")
+            
       my_print("----")
 
    return dExif
 
-def create_path_with_exif(sPath, sExif):
+def create_path_with_exif(sPath, sExif, bCpImageNoExif):
    """
    Create a file path with the exif date.
    
@@ -154,17 +158,19 @@ def create_path_with_exif(sPath, sExif):
    Returns the same directory as sPath, but with the filename replaced by the date values of the EXIF string.
    """
    sExtension = os.path.splitext(sPath)[1]
-   sNewFileName = sExif.replace(':',"-").replace(" ", "_")+ sExtension   
-   sPathNew = os.path.join(os.path.dirname(sPath),sNewFileName)
-
-   # Check if the file are not already been renamed correctly
-   if sPathNew == sPath:
-      my_print ("Warning: File is already in the right format. Skipping '%s'" % (sPath))
-      return None
+   if sExif is not None:
+      sNewFileName = sExif.replace(':',"-").replace(" ", "_")+ sExtension   
+      sPathNew = os.path.join(os.path.dirname(sPath),sNewFileName)
+      # Check if the file are not already been renamed correctly
+      if sPathNew == sPath:
+         my_print ("Warning: File is already in the right format. Skipping '%s'" % (sPath))
+         return None
+   elif bCpImageNoExif:
+       sPathNew = sPath
 
    return sPathNew
    
-def create_new_image_path(dExif, dInputDirectory, sOuputDirectory, bCopyTree):
+def create_new_image_path(dExif, dInputDirectory, sOuputDirectory, bCopyTree, bCpNoExif):
    """
    Based on the input path, the Exif information and the options, create the new path for the images.
    """
@@ -175,7 +181,7 @@ def create_new_image_path(dExif, dInputDirectory, sOuputDirectory, bCopyTree):
    # If there is no destination, the images are copy/overwritten in the same directory than the input
    if sOuputDirectory is None:
       for sPathOld in lPathOld:
-         sPathNew = create_path_with_exif(sPathOld,  dExif[sPathOld])
+         sPathNew = create_path_with_exif(sPathOld, dExif[sPathOld], bCpNoExif)
          if sPathNew is not None:
             dNewPathRaw[sPathOld] = sPathNew
    elif bCopyTree: # Recreate the same tree in the output
@@ -187,11 +193,11 @@ def create_new_image_path(dExif, dInputDirectory, sOuputDirectory, bCopyTree):
          sSubDirectory = os.path.dirname(sPathOld).replace(sDirToRemove,"")[1:]
          sNewDirectory = os.path.join(sOuputDirectory, sSubDirectory)
          sPathNew =  create_path_with_exif(os.path.join(sNewDirectory,os.path.basename(sPathOld)),\
-                                           dExif[sPathOld])
+                                           dExif[sPathOld], bCpNoExif)
   	 dNewPathRaw[sPathOld] = sPathNew
    else:
       for sPathOld in lPathOld:
-	 sFilepath = create_path_with_exif(sPathOld,  dExif[sPathOld])
+	 sFilepath = create_path_with_exif(sPathOld,  dExif[sPathOld], bCpNoExif)
 	 print sFilepath
 	 sFileBasename = os.path.basename(sFilepath)
 	 dNewPathRaw[sPathOld] = os.path.join(sOuputDirectory, sFileBasename)
@@ -251,9 +257,10 @@ def write_log(sPath):
    Write the log written in the global list lLog in the provided path.
    """
 
-   f = open(sPath, 'w')
-   f.writelines([sString+os.linesep for sString in lLog])
-   f.close()
+   if sPath is not None:
+      f = open(sPath, 'w')
+      f.writelines([sString+os.linesep for sString in lLog])
+      f.close()
    
 def duplicate_images(dPath):
    """
@@ -284,7 +291,7 @@ def duplicate_images(dPath):
    
 
 def exif_rename_files(lInputDirectory, sOuputDirectory=None, bRecursiveInput=False, bCopyTree=False, \
-                      bMove=False, bNoClubber=False, sLogPath=None, bTest=False):
+                      bMove=False, bNoClubber=False, sLogPath=None, bTest=False, bCopyNoExif=False):
    """
    Rename the files in sInputDirectory according to the EXIF information.
    Name of the file is of the form: YYYY-MM-DD_HHmm[_NN].jpg
@@ -293,11 +300,16 @@ def exif_rename_files(lInputDirectory, sOuputDirectory=None, bRecursiveInput=Fal
    # Get all the images path
    dInputPathImages = get_images_path(lInputDirectory, bRecursiveInput)
 
+   if len(dInputPathImages.values()) == 0:
+      my_print("No image file identified.")
+      write_log(sLogPath)
+      exit(0)
+      
    # Extract the EXIF information for all images
-   dExif = get_images_with_exif(dInputPathImages.keys())
+   dExif = get_images_with_exif(dInputPathImages.keys(), bCopyNoExif)
 
    # Create the path where the file will be copied
-   dNewPathRaw = create_new_image_path(dExif, dInputPathImages, sOuputDirectory, bCopyTree)
+   dNewPathRaw = create_new_image_path(dExif, dInputPathImages, sOuputDirectory, bCopyTree, bCopyNoExif)
 
    # Remove any possible collision by adding a suffix in the file name of image having the same Exif and destination
    dNewPathUnique = get_unique_path_for_images(dNewPathRaw)
@@ -314,8 +326,7 @@ def exif_rename_files(lInputDirectory, sOuputDirectory=None, bRecursiveInput=Fal
    duplicate_images(dNewPathUnique)
          
    # Mettre le tout dans le log
-   if sLogPath is not None:
-      write_log(sLogPath)
+   write_log(sLogPath)
 
 ############################################################
 # exif_rename_files in Command line
@@ -330,7 +341,7 @@ def get_command_line():
    """
 
    parser = argparse.ArgumentParser(prog='PROG', prefix_chars='-')
-   parser.add_argument("--input", "-d", dest="Input", nargs="*", \
+   parser.add_argument("--input", "-i", dest="Input", nargs="*", \
                      help="Directory or files where the jpg/JPG files will be searched for renaming",\
                        action="store", type=str, default=None, required=True)
    parser.add_argument("--output-directory", "-o", dest="OutputDirectory", \
@@ -357,6 +368,9 @@ def get_command_line():
                      help="Output is verbose.", action="store_true", default=False)
    parser.add_argument("--silent", "-s", dest="Silent", \
                      help="No output on terminal.", action="store_true", default=False)
+   parser.add_argument("--include-file-with-exif", "-N", dest="CpNoExif", \
+                       help="Copy or move files with no EXIF, using their original file name as destination.",\
+                       action="store_true", default=False)   
    # Parse the args
    options = parser.parse_args()
 
@@ -390,7 +404,7 @@ def get_command_line():
             exit (4)
       # If the file does not exist
       elif os.access(os.path.dirname(sLogFile), os.W_OK):
-         print "Log file will be written in '%s'"
+         print "Log file will be written in '%s'" % (sLogFile)
       else:
          print "Error: Log path '%s' provided in '--log' and cannot be written. Please provide a valid file path. Exiting." % (sLogFile)
          exit (5)
@@ -407,16 +421,18 @@ def get_command_line():
    else:
       nGlobalVerbosity = NORMAL
    my_print("Verbosity level is set to: " + str(nGlobalVerbosity), nMessageVerbosity=VERBOSE)
-
+   my_print("Arguments in command line are:\n " + str(sys.argv), nMessageVerbosity=VERBOSE)
+   
+   
    return (options.Input, options.OutputDirectory, options.Recursive, \
-           options.CopyTree, options.Move, options.NoClobber, options.LogFile, options.Test)
+           options.CopyTree, options.Move, options.NoClobber, options.LogFile, options.Test, options.CpNoExif)
 
 
 
 if __name__ == "__main__":
 
-   (lInputDirectory, sOutputDirectory, bRecursive, bCopyTree, bMove, bNoClobber,  sLogFile, bTest)\
+   (lInputDirectory, sOutputDirectory, bRecursive, bCopyTree, bMove, bNoClobber,  sLogFile, bTest, bNoExif)\
       = get_command_line()
 
-   exif_rename_files(lInputDirectory, sOutputDirectory, bRecursive, bCopyTree, bMove, bNoClobber, sLogFile, bTest)
+   exif_rename_files(lInputDirectory, sOutputDirectory, bRecursive, bCopyTree, bMove, bNoClobber, sLogFile, bTest, bNoExif)
 
