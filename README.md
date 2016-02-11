@@ -40,18 +40,26 @@ In a general way, this application should be called in command line like this:
 ```bash
 python exif_rename_files.py --input INPUT [--output-directory OUTPUTDIRECTORY] [--copy-directory-tree] [--move] [--no-clobber] [--recursive] [--log LOGFILE] [--verbose] [--silent] [--test] [--include-file-with-exif]
 ```
+
+
+| Parameter        | Description   |
+| ------------- |-------------| 
+| `--version`     | Show program's version number and exit      | 
+| `-h`, `--help` | Show help message and exit      | 
+| `--input`     | Directory or files where the jpg/JPG files will be searched for renaming| 
+
 ___
 
 Usage
 -----
 
 Copy files directly where the images are located:  
-```python 
+```bash
  python exif_rename_files.py --input  images/input
 ```
 
 Copy files in the output directory, but do not overwrite is there is already a file with this name:   
-```python
+```bash
 python exif_rename_files.py --input  images/input --no-clobber --verbose --output-directory images/output/ --recursive --log log.txt --test
 ```
 ___
