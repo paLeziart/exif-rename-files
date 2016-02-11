@@ -15,12 +15,14 @@ This script is ideal if you have many image files coming from more than one devi
 into vacation and take pictures of their trip. It is also perfect to give a meaningful file name to file like "DSC0000.JPG".
 
 It works under GNU/Linux, Windows and Apple OS.
+___
 
 Requirements
 ------------
 
 The python package ExifRead is a prerequesite for the usage of this file. Please install it for your operating system. See:  
   https://pypi.python.org/pypi/ExifRead
+___
 
 Download 
 --------
@@ -47,12 +49,13 @@ python exif_rename_files.py --input INPUT [--output-directory OUTPUTDIRECTORY] [
 | `--input`     | Directory or files where the jpg/JPG files will be searched for renaming| 
 
 
+
 Usage
 -----
 
 Copy files directly where the images are located:  
 ```bash
- python exif_rename_files.py --input  images/input
+python exif_rename_files.py --input  images/input
 ```
 
 Copy files in the output directory, but do not overwrite is there is already a file with this name:   
@@ -64,7 +67,6 @@ Bugs
 ----
 Report bugs at:  
 exif.miguel@ptaff.ca
-
 
 Author
 ------
