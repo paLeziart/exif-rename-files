@@ -248,6 +248,15 @@ def duplicate_images(dPath, tOptions):
    """
    Here is the place where the images file are duplicated, copied or moved.
    """
+   
+   # If requested, copy the input tree in the output directory
+   if bCopyTree:	
+      for sNewPath in dNewPathUnique.values():
+	 sDirectory = os.path.dirname(sNewPath)
+	 if not os.path.exists(sDirectory):
+	    os.makedirs(sDirectory)
+	 
+
    i = 1
    nNbrImages = len(dPath.keys())
    if tOptions.Move:
@@ -303,6 +312,7 @@ def exif_rename_files(tOptions):
 
    # Duplicate files
    duplicate_images(dNewPathUnique, tOptions)
+
          
 
 ############################################################
