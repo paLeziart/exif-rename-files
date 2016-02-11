@@ -49,7 +49,6 @@ python exif_rename_files.py --input INPUT [--output-directory OUTPUTDIRECTORY] [
 | `--input`     | Directory or files where the jpg/JPG files will be searched for renaming| 
 
 
-
 Usage
 -----
 
