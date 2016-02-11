@@ -127,7 +127,7 @@ def get_images_with_exif(lPathImages, bCpImageNoExif=False):
       i = i + 1
       f = open(sImagePath, 'r')
       try:
-         tags = exifread.process_file(f, strict=True)
+         tags = exifread.process_file(f, strict=False)
          sExifDate = str(tags["EXIF DateTimeOriginal"])
          dExif[sImagePath] = sExifDate
       except (KeyError), inst:
@@ -313,7 +313,6 @@ def exif_rename_files(tOptions):
    # Duplicate files
    duplicate_images(dNewPathUnique, tOptions)
 
-         
 
 ############################################################
 # exif_rename_files in Command line
