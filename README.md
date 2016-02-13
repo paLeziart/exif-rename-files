@@ -13,7 +13,7 @@ an extension of the form "_N" is added, giving "yyyy-mm-dd_HH-MM-SS[_N].jpg". "N
 This script is ideal if you have many image files coming from more than one device, for example when two person goes 
 into vacation and take pictures of their trip. It is also perfect to give a meaningful file name to file like "DSC0000.JPG".
 
-It works under GNU/Linux, Windows and Apple OS.
+It works under GNU/Linux, Windows and Mac OS X.
 ___
 
 Requirements
