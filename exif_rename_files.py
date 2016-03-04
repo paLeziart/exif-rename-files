@@ -62,7 +62,7 @@ def my_print(sMessage, nMessageVerbosity=NORMAL):
 
 def get_images_path_directory(sDirectory, bRecursive):
    """
-   Get the images path in directory and stores it into a list.
+   Get the images path in target directory and stores it into a list.
    """
    lPathImages = []
 
@@ -88,17 +88,17 @@ def get_images_path_directory(sDirectory, bRecursive):
    return lPathImages
 
 
-def get_images_path(lInput, bRecursive):
+def get_images_path(tOptions):
    """
    Get the images path in directory and stores it into a list.
    """
    lPathImages = []
    dPathImage = {} # Key is the path, value is the original directory in the input
    # Check if the directory exists
-   for sPath in lInput:
+   for sPath in tOptions.Input:
       # If input is a directory and it does not exist, we skip it
       if os.path.isdir(sPath):
-	 lPathDirectory = get_images_path_directory(sPath, bRecursive)
+	 lPathDirectory = get_images_path_directory(sPath, tOptions.Recursive)
 	 for sImage in lPathDirectory:
 	    dPathImage[sImage] = sPath
       elif os.path.isfile(sPath):
@@ -120,6 +120,7 @@ def get_images_with_exif(lPathImages, bCpImageNoExif=False):
    my_print("%s images found" % (nNbrImages),  VERBOSE)
    my_print("----",  nMessageVerbosity=VERBOSE)
    my_print("Getting EXIF information from files", VERBOSE)
+
    lPathImages.sort()
    dExif = {}
    i = 1
@@ -163,7 +164,7 @@ def create_path_with_exif(sPath, sExif, bCpImageNoExif):
 
    return sPathNew
    
-def create_new_image_path(dExif, dInputDirectory, sOuputDirectory, bCopyTree, bCpNoExif):
+def create_new_image_path(dExif, dInputDirectory, tOptions):
    """
    Based on the input path, the Exif information and the options, create the new path for the images.
    """
@@ -172,27 +173,27 @@ def create_new_image_path(dExif, dInputDirectory, sOuputDirectory, bCopyTree, bC
    lPathOld.sort()
    dNewPathRaw = {}
    # If there is no destination, the images are copy/overwritten in the same directory than the input
-   if sOuputDirectory is None:
+   if tOptions.OutputDirectory is None:
       for sPathOld in lPathOld:
-         sPathNew = create_path_with_exif(sPathOld, dExif[sPathOld], bCpNoExif)
+         sPathNew = create_path_with_exif(sPathOld, dExif[sPathOld], tOptions.CpNoExif)
          if sPathNew is not None:
             dNewPathRaw[sPathOld] = sPathNew
-   elif bCopyTree: # Recreate the same tree in the output
+   elif tOptions.CopyTree: # Recreate the same tree in the output
       for sPathOld in lPathOld:
 	 # Use the provided input directory stored in dInputDirectory for each image file. 
 	 #  Remove this first part of the input directory, leaving only the part to be created.
 	 sDirToRemove = os.path.dirname(dInputDirectory[sPathOld])
 	  # "1" in "[1:]" is used to remove the first "/", so the path can be merged (see http://ur1.ca/ogdev)
          sSubDirectory = os.path.dirname(sPathOld).replace(sDirToRemove,"")[1:]
-         sNewDirectory = os.path.join(sOuputDirectory, sSubDirectory)
+         sNewDirectory = os.path.join(tOptions.OutputDirectory, sSubDirectory)
          sPathNew =  create_path_with_exif(os.path.join(sNewDirectory,os.path.basename(sPathOld)),\
-                                           dExif[sPathOld], bCpNoExif)
+                                           dExif[sPathOld], tOptions.CpNoExif)
   	 dNewPathRaw[sPathOld] = sPathNew
-   else:
+   else: # Output directory given, all the files will be written there
       for sPathOld in lPathOld:
-	 sFilepath = create_path_with_exif(sPathOld,  dExif[sPathOld], bCpNoExif)
+	 sFilepath = create_path_with_exif(sPathOld,  dExif[sPathOld], tOptions.CpNoExif)
 	 sFileBasename = os.path.basename(sFilepath)
-	 dNewPathRaw[sPathOld] = os.path.join(sOuputDirectory, sFileBasename)
+	 dNewPathRaw[sPathOld] = os.path.join(tOptions.OutputDirectory, sFileBasename)
  
    return dNewPathRaw
          
@@ -207,17 +208,19 @@ def get_unique_path_for_images(dNewPathRawWithPossibleCollision):
    dNewOldPath = {}
    for k, v in dNewPathRawWithPossibleCollision.iteritems():
     dNewOldPath.setdefault(v, []).append(k)
-    
-   for sNewPath in dNewOldPath.keys():
+
+   lNewPath = dNewOldPath.keys() 
+   for sNewPath in lNewPath:
       nNbrImageWithThisExif =  len(dNewOldPath[sNewPath])
       if nNbrImageWithThisExif == 1:
          # Ignore if origin and destination are the same
-         if dNewOldPath[sNewPath][0] == sNewPath:
+         sOldPath = dNewOldPath[sNewPath][0]
+         if sOldPath == sNewPath:
             my_print ("File already has the right name and is in the destination directory.\n Ignoring '%s'" \
                       % (sNewPath), VERBOSE)
             my_print ("----", VERBOSE)
          else: 
-            dNewPathUnique[dNewOldPath[sNewPath][0]] = sNewPath
+            dNewPathUnique[sOldPath] = sNewPath
             my_print ("EXIF date is unique, renaming\n %s --> %s" % (dNewOldPath[sNewPath], sNewPath), VERBOSE)
             my_print ("----", VERBOSE)
       else:
@@ -244,27 +247,27 @@ def get_unique_path_for_images(dNewPathRawWithPossibleCollision):
 
    return dNewPathUnique
       
-def duplicate_images(dPath):
+def duplicate_images(dPath, tOptions):
    """
    Here is the place where the images file are duplicated, copied or moved.
    """
    i = 1
    nNbrImages = len(dPath.keys())
-   if bMove:
+   if tOptions.Move:
       sMode = "Move"
    else:
       sMode = "Copy"
    for sOldPath in dPath.keys():
       sNewPath = dPath[sOldPath]
-      if bNoClobber and os.path.exists(sNewPath):
+      if tOptions.NoClobber and os.path.exists(sNewPath):
          my_print ("File '%s' already exists and --no-clobber option activated. Skipping renaming of '%s'." \
                    % (sNewPath, sOldPath), VERBOSE)
       else:
          sProcessing = "----\nProcessing [%s/%s]:" % (i, nNbrImages)
          my_print(sProcessing + sMode +  " %s ---> %s" % (sOldPath, sNewPath))
-         if bTest :
+         if tOptions.DryRun :
             my_print("Dry-run mode is activated: no operation is done")
-         elif not bMove:
+         elif not tOptions.Move:
             shutil.copy2(sOldPath, sNewPath)
          else:
             shutil.movefile(sOldPath, sNewPath)
@@ -272,15 +275,21 @@ def duplicate_images(dPath):
       i = i + 1
    
 
-def exif_rename_files(lInputDirectory, sOuputDirectory=None, bRecursiveInput=False, bCopyTree=False, \
-                      bMove=False, bNoClubber=False, bTest=False, bCopyNoExif=False):
+#def exif_rename_files(lInputDirectory, sOuputDirectory=None, bRecursiveInput=False, bCopyTree=False, \
+#                      bMove=False, bNoClobber=False, bTest=False, bCopyNoExif=False):
+def exif_rename_files(tOptions):
    """
    Rename the files in sInputDirectory according to the EXIF information.
    Name of the file is of the form: YYYY-MM-DD_HHmm[_NN].jpg
    """
-
+#   bCopyTree = tOptions.CopyTree
+   bMove = tOptions.Move
+   bNoClobber = tOptions.NoClobber
+   bDryRun = tOptions.DryRun
+   bCopyNoExif = tOptions.CpNoExif
+   
    # Get all the images path
-   dInputPathImages = get_images_path(lInputDirectory, bRecursiveInput)
+   dInputPathImages = get_images_path(tOptions)
 
    if len(dInputPathImages.values()) == 0:
       my_print("No image file identified.")
@@ -290,13 +299,13 @@ def exif_rename_files(lInputDirectory, sOuputDirectory=None, bRecursiveInput=Fal
    dExif = get_images_with_exif(dInputPathImages.keys(), bCopyNoExif)
 
    # Create the path where the file will be copied
-   dNewPathRaw = create_new_image_path(dExif, dInputPathImages, sOuputDirectory, bCopyTree, bCopyNoExif)
+   dNewPathRaw = create_new_image_path(dExif, dInputPathImages, tOptions)
 
    # Remove any possible collision by adding a suffix in the file name of image having the same Exif and destination
    dNewPathUnique = get_unique_path_for_images(dNewPathRaw)
 
    # If requested, copy the input tree in the output directory
-   if bCopyTree:	
+   if tOptions.CopyTree:	
       for sNewPath in dNewPathUnique.values():
 	 sDirectory = os.path.dirname(sNewPath)
 	 if not os.path.exists(sDirectory):
@@ -304,7 +313,7 @@ def exif_rename_files(lInputDirectory, sOuputDirectory=None, bRecursiveInput=Fal
 	 
 
    # Duplicate files
-   duplicate_images(dNewPathUnique)
+   duplicate_images(dNewPathUnique, tOptions)
          
 
 ############################################################
@@ -321,13 +330,13 @@ def get_command_line():
 
    parser = argparse.ArgumentParser(prog='PROG', prefix_chars='-',\
                                     description="Convert file name to date according to EXIF information")
-   parser.add_argument("Input", metavar="I", nargs="*", \
+   parser.add_argument("Input", metavar="Input", nargs="*", \
                      help="Directory or file(s) where the jpg/JPG files will be searched for renaming",\
                        action="store", type=str, default=None)
    parser.add_argument("--output-directory", "-o", dest="OutputDirectory", \
                      help="Optionnal: Directory where the image files will be written",\
                      action="store", type=str, default=None)   
-   parser.add_argument("--dry-run", "-t", dest="Test", \
+   parser.add_argument("--dry-run", "-t", dest="DryRun", \
                      help="Perform the operation but do not move or copy the files, simply log the changes that would be done", action="store_true", default=False)
    parser.add_argument("--copy-directory-tree", "-C", dest="CopyTree",  \
                      help="Copy the directory tree in the output directory, to mimic the input sub-directories",\
@@ -388,15 +397,13 @@ def get_command_line():
    my_print("Verbosity level is set to: " + str(nGlobalVerbosity), nMessageVerbosity=VERBOSE)
    my_print("Arguments in command line are:\n " + str(sys.argv), nMessageVerbosity=VERBOSE)
    
-   
-   return (options.Input, options.OutputDirectory, options.Recursive, \
-           options.CopyTree, options.Move, options.NoClobber, options.Test, options.CpNoExif)
+   return options
+#   return (options.Input, options.OutputDirectory, options.Recursive, \
+#           options.CopyTree, options.Move, options.NoClobber, options.Test, options.CpNoExif)
 
 
 if __name__ == "__main__":
 
-   (lInputDirectory, sOutputDirectory, bRecursive, bCopyTree, bMove, bNoClobber, bTest, bNoExif)\
-      = get_command_line()
+   tOptions = get_command_line()
 
-   exif_rename_files(lInputDirectory, sOutputDirectory, bRecursive, bCopyTree, bMove, bNoClobber, bTest, bNoExif)
-
+   exif_rename_files(tOptions)
