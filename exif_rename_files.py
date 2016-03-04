@@ -260,10 +260,11 @@ def duplicate_images(dPath):
          my_print ("File '%s' already exists and --no-clobber option activated. Skipping renaming of '%s'." \
                    % (sNewPath, sOldPath), VERBOSE)
       else:
-         sProcessing = "Processing [  %s/%s]:" % (i, nNbrImages)
+         sProcessing = " Processing [  %s/%s]:" % (i, nNbrImages)
          my_print(sProcessing + sMode +  " %s ---> %s" % (sOldPath, sNewPath), VERBOSE)
          if bTest :
-            my_print("----\n Test mode is activated: no operation is done")
+            my_print("----\n Dry-run mode is activated: no operation is done")
+            my_print(sProcessing + sMode +  " %s ---> %s" % (sOldPath, sNewPath))
          elif not bMove:
             shutil.copy2(sOldPath, sNewPath)
          else:
@@ -326,7 +327,7 @@ def get_command_line():
    parser.add_argument("--output-directory", "-o", dest="OutputDirectory", \
                      help="Optionnal: Directory where the image files will be written",\
                      action="store", type=str, default=None)   
-   parser.add_argument("--test", "-t", dest="Test", \
+   parser.add_argument("--dry-run", "-t", dest="Test", \
                      help="Perform the operation but do not move or copy the files, simply log the changes that would be done", action="store_true", default=False)
    parser.add_argument("--copy-directory-tree", "-C", dest="CopyTree",  \
                      help="Copy the directory tree in the output directory, to mimic the input sub-directories",\
