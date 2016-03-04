@@ -124,7 +124,7 @@ def get_images_with_exif(lPathImages, bCpImageNoExif=False):
    dExif = {}
    i = 1
    for sImagePath in lPathImages:
-      my_print ('Processing image %s/%s: %s\r' % \
+      my_print ('Extraction EXIF from %s/%s: %s\r' % \
                 (i,nNbrImages, os.path.basename(sImagePath)))
       i = i + 1
       f = open(sImagePath, 'r')
@@ -260,11 +260,10 @@ def duplicate_images(dPath):
          my_print ("File '%s' already exists and --no-clobber option activated. Skipping renaming of '%s'." \
                    % (sNewPath, sOldPath), VERBOSE)
       else:
-         sProcessing = " Processing [  %s/%s]:" % (i, nNbrImages)
-         my_print(sProcessing + sMode +  " %s ---> %s" % (sOldPath, sNewPath), VERBOSE)
+         sProcessing = "----\nProcessing [%s/%s]:" % (i, nNbrImages)
+         my_print(sProcessing + sMode +  " %s ---> %s" % (sOldPath, sNewPath))
          if bTest :
-            my_print("----\n Dry-run mode is activated: no operation is done")
-            my_print(sProcessing + sMode +  " %s ---> %s" % (sOldPath, sNewPath))
+            my_print("Dry-run mode is activated: no operation is done")
          elif not bMove:
             shutil.copy2(sOldPath, sNewPath)
          else:
@@ -320,10 +319,11 @@ def get_command_line():
    Parse the command line and perform all the checks.
    """
 
-   parser = argparse.ArgumentParser(prog='PROG', prefix_chars='-')
-   parser.add_argument("--input", "-i", dest="Input", nargs="*", \
-                     help="Directory or files where the jpg/JPG files will be searched for renaming",\
-                       action="store", type=str, default=None, required=True)
+   parser = argparse.ArgumentParser(prog='PROG', prefix_chars='-',\
+                                    description="Convert file name to date according to EXIF information")
+   parser.add_argument("Input", metavar="I", nargs="*", \
+                     help="Directory or file(s) where the jpg/JPG files will be searched for renaming",\
+                       action="store", type=str, default=None)
    parser.add_argument("--output-directory", "-o", dest="OutputDirectory", \
                      help="Optionnal: Directory where the image files will be written",\
                      action="store", type=str, default=None)   
@@ -347,10 +347,23 @@ def get_command_line():
                      help="No output on terminal.", action="store_true", default=False)
    parser.add_argument("--include-file-with-exif", "-N", dest="CpNoExif", \
                        help="Copy or move files with no EXIF, using their original file name as destination.",\
-                       action="store_true", default=False)   
+                       action="store_true", default=False)
+   parser.add_argument("--version", "-V", dest="bVersion", \
+                       help="Output version information and exit",\
+                       action="store_true", default=False)               
+
    # Parse the args
    options = parser.parse_args()
 
+   if options.bVersion:
+      print "exif_rename.py version: " + VERSION
+      print "Copyright (C) 2014 Free Software Foundation, Inc."
+      print "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>."
+      print "This is free software: you are free to change and redistribute it."
+      print "There is NO WARRANTY, to the extent permitted by law.\n"
+      print "Written by Miguel Tremblay, http://ptaff.ca/miguel/"
+      exit(0)
+   
    # Verify is Copy Tree is provided but without any place to copy the output, or if the input is 
    #  files and not a directroy
    if options.CopyTree and options.OutputDirectory is None:
