@@ -282,12 +282,7 @@ def exif_rename_files(tOptions):
    Rename the files in sInputDirectory according to the EXIF information.
    Name of the file is of the form: YYYY-MM-DD_HHmm[_NN].jpg
    """
-#   bCopyTree = tOptions.CopyTree
-   bMove = tOptions.Move
-   bNoClobber = tOptions.NoClobber
-   bDryRun = tOptions.DryRun
-   bCopyNoExif = tOptions.CpNoExif
-   
+
    # Get all the images path
    dInputPathImages = get_images_path(tOptions)
 
@@ -296,7 +291,7 @@ def exif_rename_files(tOptions):
       exit(0)
       
    # Extract the EXIF information for all images
-   dExif = get_images_with_exif(dInputPathImages.keys(), bCopyNoExif)
+   dExif = get_images_with_exif(dInputPathImages.keys(), tOptions.CpNoExif)
 
    # Create the path where the file will be copied
    dNewPathRaw = create_new_image_path(dExif, dInputPathImages, tOptions)
