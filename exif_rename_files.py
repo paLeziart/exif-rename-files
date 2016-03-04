@@ -133,13 +133,13 @@ def get_images_with_exif(lPathImages, bCpImageNoExif=False):
          sExifDate = str(tags["EXIF DateTimeOriginal"])
          dExif[sImagePath] = sExifDate
       except (KeyError), inst:
-         my_print ("No EXIF information found in file '" + sImagePath + "'")
+         my_print ("No EXIF information found in file '" + sImagePath + "'", VERBOSE)
          if bCpImageNoExif:
             dExif[sImagePath] = None
          else:
-            my_print ("Skipping.")
+            my_print ("Skipping.", VERBOSE)
             
-      my_print("----")
+      my_print("----", VERBOSE)
 
    return dExif
 
@@ -157,7 +157,7 @@ def create_path_with_exif(sPath, sExif, bCpImageNoExif):
       sPathNew = os.path.join(os.path.dirname(sPath),sNewFileName)
       # Check if the file are not already been renamed correctly
       if sPathNew == sPath:
-         my_print ("Warning: File is already in the right format. Skipping '%s'" % (sPath))
+         my_print ("Warning: File is already in the right format. Skipping '%s'" % (sPath), VERBOSE)
    elif bCpImageNoExif:
        sPathNew = sPath
 
@@ -191,7 +191,6 @@ def create_new_image_path(dExif, dInputDirectory, sOuputDirectory, bCopyTree, bC
    else:
       for sPathOld in lPathOld:
 	 sFilepath = create_path_with_exif(sPathOld,  dExif[sPathOld], bCpNoExif)
-	 print sFilepath
 	 sFileBasename = os.path.basename(sFilepath)
 	 dNewPathRaw[sPathOld] = os.path.join(sOuputDirectory, sFileBasename)
  
@@ -215,14 +214,14 @@ def get_unique_path_for_images(dNewPathRawWithPossibleCollision):
          # Ignore if origin and destination are the same
          if dNewOldPath[sNewPath][0] == sNewPath:
             my_print ("File already has the right name and is in the destination directory.\n Ignoring '%s'" \
-                      % (sNewPath))
-            my_print ("----")
+                      % (sNewPath), VERBOSE)
+            my_print ("----", VERBOSE)
          else: 
             dNewPathUnique[dNewOldPath[sNewPath][0]] = sNewPath
             my_print ("EXIF date is unique, renaming\n %s --> %s" % (dNewOldPath[sNewPath], sNewPath), VERBOSE)
             my_print ("----", VERBOSE)
       else:
-         my_print ("File %s is not unique! There is %s occurences" % (sNewPath, nNbrImageWithThisExif))
+         my_print ("File %s is not unique! There is %s occurences" % (sNewPath, nNbrImageWithThisExif), VERBOSE)
          nNumberDigit = len(str(nNbrImageWithThisExif))
          # Update each image path by adding a numbe of digit before the extension.
          i = 0
@@ -235,13 +234,13 @@ def get_unique_path_for_images(dNewPathRawWithPossibleCollision):
             sNewImagePathUnique = re.sub(sExtension + '$', j + sExtension, sNewImagePathSame)
             if sOldImagePathWithSameExif == sNewImagePathUnique:
                my_print ("File already has the right name and is in the destination directory.\n Ignoring '%s'" %\
-                         (sNewImagePathUnique))
-               my_print ("----")
+                         (sNewImagePathUnique), VERBOSE)
+               my_print ("----", VERBOSE)
             else:
                dNewPathUnique[sOldImagePathWithSameExif] = sNewImagePathUnique
             i = i + 1
-            my_print ("Associating\n %s --> %s" % (sOldImagePathWithSameExif,sNewImagePathUnique))
-         my_print ("----")
+            my_print ("Associating\n %s --> %s" % (sOldImagePathWithSameExif,sNewImagePathUnique), VERBOSE)
+         my_print ("----", VERBOSE)
 
    return dNewPathUnique
       
@@ -259,17 +258,17 @@ def duplicate_images(dPath):
       sNewPath = dPath[sOldPath]
       if bNoClobber and os.path.exists(sNewPath):
          my_print ("File '%s' already exists and --no-clobber option activated. Skipping renaming of '%s'." \
-                   % (sNewPath, sOldPath))
+                   % (sNewPath, sOldPath), VERBOSE)
       else:
-         my_print (sMode + " image %s/%s\r" % (i,nNbrImages))
-         my_print ("\t %s --> %s" % (sOldPath, sNewPath))
+         sProcessing = "Processing [  %s/%s]:" % (i, nNbrImages)
+         my_print(sProcessing + sMode +  " %s ---> %s" % (sOldPath, sNewPath), VERBOSE)
          if bTest :
             my_print("----\n Test mode is activated: no operation is done")
          elif not bMove:
             shutil.copy2(sOldPath, sNewPath)
          else:
             shutil.movefile(sOldPath, sNewPath)
-      my_print ("----")
+      my_print ("----", VERBOSE)
       i = i + 1
    
 
@@ -378,7 +377,6 @@ def get_command_line():
    
    return (options.Input, options.OutputDirectory, options.Recursive, \
            options.CopyTree, options.Move, options.NoClobber, options.Test, options.CpNoExif)
-
 
 
 if __name__ == "__main__":
