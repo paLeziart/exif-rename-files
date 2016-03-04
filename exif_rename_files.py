@@ -47,17 +47,12 @@ NORMAL= 1
 VERBOSE= 2
 
 nGlobalVerbosity = 1
-lLog = ["Output log of exif_rename_files.py"]
 
 def my_print(sMessage, nMessageVerbosity=NORMAL):
    """
-   Use this method to write the message in the standart output and the log file, if requested.
+   Use this method to write the message in the standart output 
    """
 
-   # Add the message in the log
-   global lLog
-   lLog.append(sMessage)
- 
    if nGlobalVerbosity != SILENT:
       if nMessageVerbosity == NORMAL:
          print sMessage
@@ -250,16 +245,6 @@ def get_unique_path_for_images(dNewPathRawWithPossibleCollision):
 
    return dNewPathUnique
       
-def write_log(sPath):
-   """
-   Write the log written in the global list lLog in the provided path.
-   """
-
-   if sPath is not None:
-      f = open(sPath, 'w')
-      f.writelines([sString+os.linesep for sString in lLog])
-      f.close()
-   
 def duplicate_images(dPath):
    """
    Here is the place where the images file are duplicated, copied or moved.
@@ -289,7 +274,7 @@ def duplicate_images(dPath):
    
 
 def exif_rename_files(lInputDirectory, sOuputDirectory=None, bRecursiveInput=False, bCopyTree=False, \
-                      bMove=False, bNoClubber=False, sLogPath=None, bTest=False, bCopyNoExif=False):
+                      bMove=False, bNoClubber=False, bTest=False, bCopyNoExif=False):
    """
    Rename the files in sInputDirectory according to the EXIF information.
    Name of the file is of the form: YYYY-MM-DD_HHmm[_NN].jpg
@@ -300,7 +285,6 @@ def exif_rename_files(lInputDirectory, sOuputDirectory=None, bRecursiveInput=Fal
 
    if len(dInputPathImages.values()) == 0:
       my_print("No image file identified.")
-      write_log(sLogPath)
       exit(0)
       
    # Extract the EXIF information for all images
@@ -323,8 +307,6 @@ def exif_rename_files(lInputDirectory, sOuputDirectory=None, bRecursiveInput=Fal
    # Duplicate files
    duplicate_images(dNewPathUnique)
          
-   # Mettre le tout dans le log
-   write_log(sLogPath)
 
 ############################################################
 # exif_rename_files in Command line
@@ -359,9 +341,6 @@ def get_command_line():
    parser.add_argument("--recursive", "-r",  dest="Recursive", \
                      help="Look for files in the directory and its subfolders.",\
                      action="store_true", default=False)
-   parser.add_argument("--log", "-l", dest="LogFile", \
-                     help="Write all the logging information in the identified file",\
-                     action="store", type=str, default=None)
    parser.add_argument("--verbose", "-v", dest="Verbosity", \
                      help="Output is verbose.", action="store_true", default=False)
    parser.add_argument("--silent", "-s", dest="Silent", \
@@ -383,31 +362,6 @@ def get_command_line():
       exit (3)
 
 
-   # Check if the log file can be written
-   if options.LogFile is not None:
-      
-      # Path is the current directory and a manipulation must be done to avoid an error while checking if the 
-      # file can be written. Absolute path is then given instead of relative path in the working directory.
-      sLogFile = options.LogFile
-      if (os.path.dirname(options.LogFile)) == "":
-         sLogFile = os.path.join(os.path.dirname(os.path.abspath(__file__)), options.LogFile)
-      
-      # If the file exists
-      if os.path.exists(sLogFile):
-         if os.access(sLogFile, os.W_OK):
-            print"Log file '%s' exists and will be overwritten" % (sLogFile)
-         else:
-            print "Error: Log path '%s' exists but can not be overwritten. Fix this error and retry. Exiting." \
-               % (sLogFile)
-            exit (4)
-      # If the file does not exist
-      elif os.access(os.path.dirname(sLogFile), os.W_OK):
-         print "Log file will be written in '%s'" % (sLogFile)
-      else:
-         print "Error: Log path '%s' provided in '--log' and cannot be written. Please provide a valid file path. Exiting." % (sLogFile)
-         exit (5)
-      
-      
    # Set the global verbosity
    global nGlobalVerbosity
    if options.Verbosity:
@@ -423,14 +377,14 @@ def get_command_line():
    
    
    return (options.Input, options.OutputDirectory, options.Recursive, \
-           options.CopyTree, options.Move, options.NoClobber, options.LogFile, options.Test, options.CpNoExif)
+           options.CopyTree, options.Move, options.NoClobber, options.Test, options.CpNoExif)
 
 
 
 if __name__ == "__main__":
 
-   (lInputDirectory, sOutputDirectory, bRecursive, bCopyTree, bMove, bNoClobber,  sLogFile, bTest, bNoExif)\
+   (lInputDirectory, sOutputDirectory, bRecursive, bCopyTree, bMove, bNoClobber, bTest, bNoExif)\
       = get_command_line()
 
-   exif_rename_files(lInputDirectory, sOutputDirectory, bRecursive, bCopyTree, bMove, bNoClobber, sLogFile, bTest, bNoExif)
+   exif_rename_files(lInputDirectory, sOutputDirectory, bRecursive, bCopyTree, bMove, bNoClobber, bTest, bNoExif)
 
