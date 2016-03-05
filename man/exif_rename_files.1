@@ -1,0 +1,56 @@
+.TH exif_rename.py 1 \" -*- nroff -*-
+.SH NAME
+exif_rename.py \- Convert JPG file name to date according to EXIF information
+.SH SYNOPSIS
+.B exif_rename.py
+[\fIOPTION\fR] \fIFILE\fR... \fIDIRECTORY\fR...
+.SH DESCRIPTION
+Rename or copy jpg FILE or files in DIRECTORY according, to the information included in
+the EXIF information of the picture. File format of the output is \fIYYYY\-MM\-DD_HHmm[_NN].jpg\fR.
+By default, the images are copied in the same directory where the JPG file is located.
+.TP
+\fB\-h, \fB\-\-help\fR
+show this help message and exit
+.TP
+\fB\-o, \fB\-\-output\-directory\fR OUTPUTDIRECTORY
+directory where the image files will be written
+.TP
+\fB\-t, \fB\-\-dry\-run
+execute the program, but do not move or copy the files
+.TP
+\fB\-C, \fB\-\-copy\-directory\-tree
+copy the DIRECTORY tree in the output directory, to mimic the input sub-directories
+.TP
+\fB\-m, \fB\-\-move
+move the files, instead of copying
+.TP
+\fB\-n,  \fB\-\-no\-clobber
+Do not overwrite an existing file
+.TP
+\fB\-r, \fB\-\-recursive
+look for files in the DIRECTORY and its subfolders
+.TP
+\fB\-v, \fB\-\-verbose
+explain what is being done
+.TP
+\fB\-N, \fB\-\-include\-file\-with\-no\-exif
+copy or move FILES with no EXIF, using their original file name as destination
+.TP
+\fB\-V, \fB\-\-version
+Output version information and exit
+.PP
+The symlink are OS dependant. Under GNU/Linux, symlink pointing to files are processed, but symlink pointing to directories.
+.SH AUTHOR
+Written by Miguel Tremblay
+.SH COPYRIGHT
+Copyright \(co 2016 Miguel Tremblay <http://ptaff.ca/miguel/>
+.br
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+.br
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+.SH "SEE ALSO"
+Full documentation at: <https://gitlab.com/MiguelTremblay/exif>
+.SH BUGS
+Please submit bug reports to
+.IR gitlab.miguel@ptaff.ca
