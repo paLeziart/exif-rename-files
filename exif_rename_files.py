@@ -39,10 +39,8 @@ import exifread
 VERSION = "1.0"
 FILETYPE= [".jpg", ".JPG"]
 # Verbose level:
-## 0 Silent mode
 ## 1 Normal mode
 ## 2 Full debug
-SILENT= 0
 NORMAL= 1
 VERBOSE= 2
 
@@ -53,11 +51,10 @@ def my_print(sMessage, nMessageVerbosity=NORMAL):
    Use this method to write the message in the standart output 
    """
 
-   if nGlobalVerbosity != SILENT:
-      if nMessageVerbosity == NORMAL:
-         print sMessage
-      elif nMessageVerbosity == VERBOSE and nGlobalVerbosity == VERBOSE:
-         print sMessage
+   if nMessageVerbosity == NORMAL:
+      print sMessage
+   elif nMessageVerbosity == VERBOSE and nGlobalVerbosity == VERBOSE:
+      print sMessage
    
 
 def get_images_path_directory(sDirectory, bRecursive):
@@ -274,9 +271,6 @@ def duplicate_images(dPath, tOptions):
       my_print ("----", VERBOSE)
       i = i + 1
    
-
-#def exif_rename_files(lInputDirectory, sOuputDirectory=None, bRecursiveInput=False, bCopyTree=False, \
-#                      bMove=False, bNoClobber=False, bTest=False, bCopyNoExif=False):
 def exif_rename_files(tOptions):
    """
    Rename the files in sInputDirectory according to the EXIF information.
@@ -332,12 +326,13 @@ def get_command_line():
                      help="Optionnal: Directory where the image files will be written",\
                      action="store", type=str, default=None)   
    parser.add_argument("--dry-run", "-t", dest="DryRun", \
-                     help="Perform the operation but do not move or copy the files, simply log the changes that would be done", action="store_true", default=False)
+                     help="Execute the program, but do not move or copy the files",\
+                       action="store_true", default=False)
    parser.add_argument("--copy-directory-tree", "-C", dest="CopyTree",  \
                      help="Copy the directory tree in the output directory, to mimic the input sub-directories",\
                      action="store_true", default=False)
    parser.add_argument("--move", "-m", dest="Move", \
-                     help="Move the files, instead of copying, into the EXIF format date",\
+                     help="Move the files, instead of copying",\
                      action="store_true", default=False)
    parser.add_argument("--no-clobber", "-n", dest="NoClobber", \
                      help=" Do not overwrite an  existing  file",\
@@ -346,10 +341,8 @@ def get_command_line():
                      help="Look for files in the directory and its subfolders.",\
                      action="store_true", default=False)
    parser.add_argument("--verbose", "-v", dest="Verbosity", \
-                     help="Output is verbose.", action="store_true", default=False)
-   parser.add_argument("--silent", "-s", dest="Silent", \
-                     help="No output on terminal.", action="store_true", default=False)
-   parser.add_argument("--include-file-with-exif", "-N", dest="CpNoExif", \
+                     help="Explain what is being done", action="store_true", default=False)
+   parser.add_argument("--include-file-with-no-exif", "-N", dest="CpNoExif", \
                        help="Copy or move files with no EXIF, using their original file name as destination.",\
                        action="store_true", default=False)
    parser.add_argument("--version", "-V", dest="bVersion", \
@@ -378,27 +371,20 @@ def get_command_line():
       print "Error: Directory '%s' provided in '--output-directory' does not exist or is not a directory. Please provide a valid output directory. Exiting." % (options.OutputDirectory)
       exit (3)
 
-
    # Set the global verbosity
    global nGlobalVerbosity
    if options.Verbosity:
       nGlobalVerbosity = VERBOSE
-      if options.Silent:
-         my_print("Warning: Both '--verbose' and '--silent' mode are asked. Using '--verbose' mode.")
-   elif options.Silent:
-      nGlobalVerbosity = SILENT
    else:
       nGlobalVerbosity = NORMAL
+      
    my_print("Verbosity level is set to: " + str(nGlobalVerbosity), nMessageVerbosity=VERBOSE)
    my_print("Arguments in command line are:\n " + str(sys.argv), nMessageVerbosity=VERBOSE)
    
    return options
-#   return (options.Input, options.OutputDirectory, options.Recursive, \
-#           options.CopyTree, options.Move, options.NoClobber, options.Test, options.CpNoExif)
 
 
 if __name__ == "__main__":
 
    tOptions = get_command_line()
-
    exif_rename_files(tOptions)
