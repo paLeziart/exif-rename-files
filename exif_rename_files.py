@@ -250,8 +250,8 @@ def duplicate_images(dPath, tOptions):
    """
    
    # If requested, copy the input tree in the output directory
-   if bCopyTree:	
-      for sNewPath in dNewPathUnique.values():
+   if tOptions.CopyTree:	
+      for sNewPath in dPath.values():
 	 sDirectory = os.path.dirname(sNewPath)
 	 if not os.path.exists(sDirectory):
 	    os.makedirs(sDirectory)
