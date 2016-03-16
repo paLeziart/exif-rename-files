@@ -98,6 +98,22 @@ sudo chmod a+rx /usr/local/bin/exif_rename_files.py
 ### Windows
 
 ### Mac OS X
+First, you have to install the package `exifread` which is available via `pip`.
+To install `pip`, install the [`python` `HomeBrew`](http://docs.python-guide.org/en/latest/starting/install/osx/) package with the command
+```bash
+brew install python
+```
+Then, install [`exifread`](https://pypi.python.org/pypi/ExifRead) with
+```bash
+pip install exifread
+```
+
+Once those steps are done, you can follow the same steps as on GNU/Linux:
+```bash
+wget http://ptaff.ca/exif/exif_rename_files.py
+sudo mv exif_rename_files.py /usr/local/bin
+sudo chmod a+rx /usr/local/bin/exif_rename_files.py
+```
 
 
 Bugs
