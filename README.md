@@ -8,8 +8,7 @@ The exif_rename_files.py is a python script used to rename, or copy, image files
 of the files. The input files must be in jpeg format, having an extension of the form ".jpg" or ".JPG". 
 
 The file name has the form of "yyyy-mm-dd_HH-MM-SS.jpg".  If there is more than one file with the same date up to the second,
-an extension of the form "_N" is added, giving "yyyy-mm-dd_HH-MM-SS_N.jpg". "N" has a fix number of digits. Hence, if there is 
-10 files with the same second, the first will be labeled with "01", preserving the alphabetical order of the images.
+an extension of the form "_N" is added, giving "yyyy-mm-dd_HH-MM-SS[_N].jpg". "N" has a flexible number of digits. Hence, if there is 10 files with the same second, the first will be labeled with "01", preserving the alphabetical order of the images.
 
 This script is ideal if you have many image files coming from more than one device, for example when two person goes 
 into vacation and take pictures of their trip. It is also perfect to give a meaningful file name to file like "DSC0000.JPG".
@@ -20,8 +19,9 @@ ___
 Requirements
 ------------
 
-The python package ExifRead is a prerequesite for the usage of this file. Please install it for your operating system. See:  
-  https://pypi.python.org/pypi/ExifRead
+* [Python2] (https://www.python.org/downloads/)
+* [Python ExifRead] (https://pypi.python.org/pypi/ExifRead)
+
 ___
 
 Download 
@@ -38,34 +38,72 @@ Manual
  
 In a general way, this application should be called in command line like this:  
 ```bash
-python exif_rename_files.py --input INPUT [--output-directory OUTPUTDIRECTORY] [--copy-directory-tree] [--move] [--no-clobber] [--recursive] [--log LOGFILE] [--verbose] [--silent] [--test] [--include-file-with-exif]
+python exif_rename_files.py [OPTIONS] INPUT
 ```
+<br />
+where:   
+* INPUT:Directory or file(s) where the jpg/JPG files will be searched for renaming jpg files.
+* OPTIONS are described in the table below.
 
-
-| Parameter        | Description   |
+| Options        | Description   |
 | ------------- |-------------| 
-| `--version`     | Show program's version number and exit      | 
 | `-h`, `--help` | Show help message and exit      | 
 | `--input`     | Directory or files where the jpg/JPG files will be searched for renaming| 
-
+| `-o` `--output-directory`&nbsp;DIRECTORY   |Directory where the image files will be written      | 
+|`-t`  `--dry-run`     |   Execute the program, but do not move or copy the files    | 
+|`-C` `--copy-directory-tree`  |Copy the directory tree in the output directory, to mimic the input sub-directories |
+|`-m` `--move`  |  Move the files, instead of copying |
+| `-n` `--no-clobber` |Do not overwrite an existing file  |
+| `-r` `--recursive`  | Look for files in the directory and its subfolders. |
+|`-v` `--verbose`  | Explain what is being done |
+|`-N` `--include-file-with-no-exif`  | Copy or move files with no EXIF, using their original  file name as destination |
+|`-V` `--version`|Output version information and exit|
 
 Usage
 -----
 
-Copy files directly where the images are located:  
+Copy the image directly in the folder where it is located:  
+```bash
+ python exif_rename_files.py /home/miguel/photo/DSC0000.JPG
+```
+<br />
+Copy all the images directly in the folder where they are located:  
+```bash
+ python exif_rename_files.py /home/miguel/photo/
+```
+<br />
+Copy the images coming from two directories, in a target directory:  
+```bash
+ python exif_rename_files.py --output-directory /home/miguel/photo/output/2013/  /home/miguel/photo/2013/ /home/pauline/photo/2013/
+```
+<br />
+Copy the all the images in the input directory, including those in subfolders, in the target directory, but do not overwrite is there is already an image with the target file name:   
 ```bash
 python exif_rename_files.py --input  images/input
 ```
 
-Copy files in the output directory, but do not overwrite is there is already a file with this name:   
+
+Installation
+-----
+
+### GNU/Linux
+
+Copy the file in '/usr/local/bin' directory and change its permission so it can be executed
 ```bash
-python exif_rename_files.py --input  images/input --no-clobber --verbose --output-directory images/output/ --recursive --log log.txt --test
+wget http://ptaff.ca/exif/exif_rename_files.py
+sudo mv exif_rename_files.py /usr/local/bin
+sudo chmod a+rx /usr/local/bin/exif_rename_files.py
 ```
+
+### Windows
+
+### Mac OS X
+
 
 Bugs
 ----
 Report bugs at:  
-exif.miguel@ptaff.ca
+[exif.miguel@ptaff.ca](exif.miguel@ptaff.ca)
 
 Author
 ------
