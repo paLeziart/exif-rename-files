@@ -329,10 +329,10 @@ def get_command_line():
    parser = argparse.ArgumentParser(prog='PROG', prefix_chars='-',\
                                     description="Convert file name to date according to EXIF information")
    parser.add_argument("Input", metavar="Input", nargs="*", \
-                     help="Directory or file(s) where the jpg/JPG files will be searched for renaming",\
+                     help="Directory or file(s) where the jpg/JPG files will be searched for renaming jpg files",\
                        action="store", type=str, default=None)
    parser.add_argument("--output-directory", "-o", dest="OutputDirectory", \
-                     help="Optionnal: Directory where the image files will be written",\
+                     help="Directory where the image files will be written",\
                      action="store", type=str, default=None)   
    parser.add_argument("--dry-run", "-t", dest="DryRun", \
                      help="Execute the program, but do not move or copy the files",\
@@ -347,12 +347,12 @@ def get_command_line():
                      help=" Do not overwrite an  existing  file",\
                      action="store_true", default=False)
    parser.add_argument("--recursive", "-r",  dest="Recursive", \
-                     help="Look for files in the directory and its subfolders.",\
+                     help="Look for files in the directory and its subfolders",\
                      action="store_true", default=False)
    parser.add_argument("--verbose", "-v", dest="Verbosity", \
                      help="Explain what is being done", action="store_true", default=False)
    parser.add_argument("--include-file-with-no-exif", "-N", dest="CpNoExif", \
-                       help="Copy or move files with no EXIF, using their original file name as destination.",\
+                       help="Copy or move files with no EXIF, using their original file name as destination",\
                        action="store_true", default=False)
    parser.add_argument("--version", "-V", dest="bVersion", \
                        help="Output version information and exit",\
