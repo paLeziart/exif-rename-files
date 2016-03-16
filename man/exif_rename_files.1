@@ -1,13 +1,16 @@
 .TH exif_rename.py 1 \" -*- nroff -*-
 .SH NAME
-exif_rename.py \- Convert JPG file name to date according to EXIF information
+exif_rename.py \- Convert JPG file name to date format according to EXIF information
 .SH SYNOPSIS
 .B exif_rename.py
 [\fIOPTION\fR] \fIFILE\fR... \fIDIRECTORY\fR...
 .SH DESCRIPTION
 Rename or copy jpg FILE or files in DIRECTORY according, to the information included in
-the EXIF information of the picture. File format of the output is \fIYYYY\-MM\-DD_HHmm[_NN].jpg\fR.
-By default, the images are copied in the same directory where the JPG file is located.
+the EXIF information of the image. File format of the output is \fIYYYY\-MM\-DD_HHmm[_N].jpg\fR.
+"N" has a flexible number of digits. Hence, if there is 10 files with the same second, the first will be
+ labeled with "01", preserving the alphabetical order of the images. The input files must be in jpeg 
+format, having an extension of the form ".jpg" or ".JPG". By default, the images are copied in the 
+same directory where the JPG file is located.
 .TP
 \fB\-h, \fB\-\-help\fR
 show this help message and exit
