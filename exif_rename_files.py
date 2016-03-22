@@ -276,7 +276,7 @@ def duplicate_images(dPath, tOptions):
          elif not tOptions.Move:
             shutil.copy2(sOldPath, sNewPath)
          else:
-            shutil.movefile(sOldPath, sNewPath)
+            shutil.move(sOldPath, sNewPath)
       my_print ("----", VERBOSE)
       i = i + 1
    
