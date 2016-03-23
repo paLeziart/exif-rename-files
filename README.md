@@ -81,9 +81,9 @@ Copy the all the images in the input directory, including those in subfolders, i
 python exif_rename_files.py --no-clobber --recursive --output-directory /home/miguel/output  /home/miguel/photo
 ```
 <br />
-Use find to fetch all the files with "DSC*" and rename them:
+Use find to fetch all the file name starting with "DSC" or "dsc" and rename them:
 ```bash
-find /home/miguel/photo/ -name "DSC*" -exec exif_rename_files.py --move {} +
+find /home/miguel/photo/ -iname "DSC*" -exec exif_rename_files.py --move {} +
 ```
 
 
