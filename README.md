@@ -48,7 +48,6 @@ where:
 | Options        | Description   |
 | ------------- |-------------| 
 | `-h`, `--help` | Show help message and exit      | 
-| `--input`     | Directory or files where the jpg/JPG files will be searched for renaming| 
 | `-o` `--output-directory`&nbsp;DIRECTORY   |Directory where the image files will be written      | 
 |`-t`  `--dry-run`     |   Execute the program, but do not move or copy the files    | 
 |`-C` `--copy-directory-tree`  |Copy the directory tree in the output directory, to mimic the input sub-directories |
@@ -79,7 +78,7 @@ Copy the images coming from two directories, in a target directory:
 <br />
 Copy the all the images in the input directory, including those in subfolders, in the target directory, but do not overwrite is there is already an image with the target file name:   
 ```bash
-python exif_rename_files.py --input  images/input
+python exif_rename_files.py --no-clobber --recursive --output-directory /home/miguel/output  /home/miguel/photo
 ```
 <br />
 Use find to fetch all the files with "DSC*" and rename them:
