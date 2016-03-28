@@ -30,8 +30,7 @@ The more recent package can be downloaded here:
 http://ptaff.ca/exif/exif_rename_files.py
 
 git version can be accessed here:  
-   git pull https://gitlab.com/MiguelTremblay/exif.git
-
+ git clone https://gitlab.com/MiguelTremblay/exif_rename_files.git
 
 Manual
 --------
