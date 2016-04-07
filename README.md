@@ -99,6 +99,17 @@ sudo chmod a+rx /usr/local/bin/exif_rename_files.py
 ```
 
 ### Windows
+If you don't have Python 2.7, you can get it and install it from here: https://www.python.org/downloads/windows/
+Then, you will need to install the package `exifread` which is available via `pip`.
+pip comes packaged with Python since Python 2.7.9 and you can run it from your Python Scripts folder
+typically C:\Python27\Scripts
+```bash
+pip install exifread
+```
+Then, you can right-click on http://ptaff.ca/exif/exif_rename_files.py and select save as. Save it inside the C:\Python27\Scripts folder.
+
+If you want to be able to call the exif_rename_files.py script from every folder, you must make sure that the C:\Python27\Scripts folder is part of 
+your PATH environment variable.
 
 ### Mac OS X
 First, you have to install the package `exifread` which is available via `pip`.
