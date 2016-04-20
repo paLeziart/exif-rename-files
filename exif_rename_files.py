@@ -136,6 +136,14 @@ def get_images_with_exif(lPathImages, bCpImageNoExif=False):
             dExif[sImagePath] = None
          else:
             my_print ("Skipping.", VERBOSE)
+      except MemoryError:
+         my_print ("Unknown error reading EXIF of '" + sImagePath + "'", VERBOSE)
+         my_print ("Using this image as no EXIF is present", VERBOSE)
+         if bCpImageNoExif:
+            dExif[sImagePath] = None
+         else:
+            my_print ("Skipping.", VERBOSE)
+
             
       my_print("----", VERBOSE)
 
