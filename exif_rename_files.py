@@ -37,7 +37,7 @@ import shutil
 import exifread
 
 VERSION = "1.0"
-FILETYPE= [".jpg", ".JPG"]
+FILETYPE= ["jpg", "JPG"]
 # Verbose level:
 ## 1 Normal mode
 ## 2 Full debug
@@ -72,7 +72,7 @@ def get_images_path_directory(sDirectory, bRecursive):
    my_print("Looking for image files with extension in: " + str(FILETYPE), VERBOSE)
    if not bRecursive:
       for file in os.listdir(sDirectory):
-         sExtension = os.path.splitext(file)[1]
+         sExtension = os.path.splitext(file)[1][1:]
          if sExtension in FILETYPE:
             lPathImages.append(os.path.join(sDirectory, file))
    else: # Walk the directories
