@@ -37,7 +37,7 @@ import shutil
 import exifread
 
 VERSION = "1.0"
-FILETYPE= ["jpg", "JPG"]
+FILETYPE= ["jpg", "JPG", "jpeg"]
 # Verbose level:
 ## 1 Normal mode
 ## 2 Full debug
