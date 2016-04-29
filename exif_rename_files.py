@@ -99,7 +99,7 @@ def get_images_path(tOptions):
 	 for sImage in lPathDirectory:
 	    dPathImage[sImage] = sPath
       elif os.path.isfile(sPath):
-	 sExtension = os.path.splitext(sPath)[1]
+	 sExtension = os.path.splitext(sPath)[1][1:]
          if sExtension in FILETYPE:
 	    dPathImage[sPath] = sPath
 
