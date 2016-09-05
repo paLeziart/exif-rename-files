@@ -78,7 +78,7 @@ def get_images_path_directory(sDirectory, bRecursive):
    else: # Walk the directories
       for root, dirs, files in os.walk(sDirectory):
          for file in files:
-            sExtension = os.path.splitext(file)[1]
+            sExtension = os.path.splitext(file)[1][1:]
             if sExtension in FILETYPE:
                lPathImages.append(os.path.join(root, file))
 
