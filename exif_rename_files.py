@@ -352,7 +352,7 @@ def get_command_line():
                      help="Move the files, instead of copying",\
                      action="store_true", default=False)
    parser.add_argument("--no-clobber", "-n", dest="NoClobber", \
-                     help=" Do not overwrite an  existing  file",\
+                     help=" Do not overwrite an existing file",\
                      action="store_true", default=False)
    parser.add_argument("--recursive", "-r",  dest="Recursive", \
                      help="Look for files in the directory and its subfolders",\
