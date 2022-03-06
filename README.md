@@ -19,18 +19,15 @@ ___
 Requirements
 ------------
 
-* [Python2] (https://www.python.org/downloads/)
+* [Python3] (https://www.python.org/downloads/)
 * [Python ExifRead] (https://pypi.python.org/pypi/ExifRead)
 
 ___
 
 Download 
 --------
-The more recent package can be downloaded here:  
-http://ptaff.ca/exif/exif_rename_files.py
-
 git version can be accessed here:  
- git clone https://gitlab.com/MiguelTremblay/exif_rename_files.git
+ git clone https://framagit.org/MiguelTremblay/exif_rename_files.git
 
 Manual
 --------
@@ -93,7 +90,7 @@ Installation
 
 Copy the file in '/usr/local/bin' directory and change its permission so it can be executed
 ```bash
-wget http://ptaff.ca/exif/exif_rename_files.py
+wget https://framagit.org/MiguelTremblay/exif_rename_files/-/raw/master/exif_rename_files.py
 sudo mv exif_rename_files.py /usr/local/bin
 sudo chmod a+rx /usr/local/bin/exif_rename_files.py
 ```
@@ -106,8 +103,6 @@ typically C:\Python27\Scripts
 ```bash
 pip install exifread
 ```
-Then, you can right-click on http://ptaff.ca/exif/exif_rename_files.py and select save as. Save it inside the C:\Python27\Scripts folder.
-
 If you want to be able to call the exif_rename_files.py script from every folder, you must make sure that the C:\Python27\Scripts folder is part of 
 your PATH environment variable.
 
@@ -124,7 +119,7 @@ pip install exifread
 
 Once those steps are done, you can follow the same steps as on GNU/Linux:
 ```bash
-wget http://ptaff.ca/exif/exif_rename_files.py
+wget https://framagit.org/MiguelTremblay/exif_rename_files/-/raw/master/exif_rename_files.py
 sudo mv exif_rename_files.py /usr/local/bin
 sudo chmod a+rx /usr/local/bin/exif_rename_files.py
 ```
