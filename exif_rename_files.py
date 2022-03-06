@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # Copyright  2016  Miguel Tremblay
@@ -52,9 +52,9 @@ def my_print(sMessage, nMessageVerbosity=NORMAL):
    """
 
    if nMessageVerbosity == NORMAL:
-      print sMessage
+      print (sMessage)
    elif nMessageVerbosity == VERBOSE and nGlobalVerbosity == VERBOSE:
-      print sMessage
+      print (sMessage)
    
 
 def get_images_path_directory(sDirectory, bRecursive):
@@ -95,13 +95,13 @@ def get_images_path(tOptions):
    for sPath in tOptions.Input:
       # If input is a directory and it does not exist, we skip it
       if os.path.isdir(sPath):
-	 lPathDirectory = get_images_path_directory(sPath, tOptions.Recursive)
-	 for sImage in lPathDirectory:
-	    dPathImage[sImage] = sPath
+         lPathDirectory = get_images_path_directory(sPath, tOptions.Recursive)
+         for sImage in lPathDirectory:
+            dPathImage[sImage] = sPath
       elif os.path.isfile(sPath):
-	 sExtension = os.path.splitext(sPath)[1][1:]
+         sExtension = os.path.splitext(sPath)[1][1:]
          if sExtension in FILETYPE:
-	    dPathImage[sPath] = sPath
+            dPathImage[sPath] = sPath
 
    return dPathImage
  
@@ -125,12 +125,12 @@ def get_images_with_exif(lPathImages, bCpImageNoExif=False):
       my_print ('Extraction EXIF from %s/%s: %s\r' % \
                 (i,nNbrImages, os.path.basename(sImagePath)))
       i = i + 1
-      f = open(sImagePath, 'r')
+      f = open(sImagePath, 'rb')
       try:
          tags = exifread.process_file(f, strict=False)
          sExifDate = str(tags["EXIF DateTimeOriginal"])
          dExif[sImagePath] = sExifDate
-      except (KeyError), inst:
+      except (KeyError) as inst:
          my_print ("No EXIF information found in file '" + sImagePath + "'", VERBOSE)
          if bCpImageNoExif:
             dExif[sImagePath] = None
@@ -174,7 +174,7 @@ def create_new_image_path(dExif, dInputDirectory, tOptions):
    Based on the input path, the Exif information and the options, create the new path for the images.
    """
 
-   lPathOld = dExif.keys()
+   lPathOld = list(dExif.keys())
    lPathOld.sort()
    dNewPathRaw = {}
    # If there is no destination, the images are copy/overwritten in the same directory than the input
@@ -187,18 +187,18 @@ def create_new_image_path(dExif, dInputDirectory, tOptions):
       for sPathOld in lPathOld:
 	 # Use the provided input directory stored in dInputDirectory for each image file. 
 	 #  Remove this first part of the input directory, leaving only the part to be created.
-	 sDirToRemove = os.path.dirname(dInputDirectory[sPathOld])
-	  # "1" in "[1:]" is used to remove the first "/", so the path can be merged (see http://ur1.ca/ogdev)
+         sDirToRemove = os.path.dirname(dInputDirectory[sPathOld])
+         # "1" in "[1:]" is used to remove the first "/", so the path can be merged (see http://ur1.ca/ogdev)
          sSubDirectory = os.path.dirname(sPathOld).replace(sDirToRemove,"")[1:]
          sNewDirectory = os.path.join(tOptions.OutputDirectory, sSubDirectory)
          sPathNew =  create_path_with_exif(os.path.join(sNewDirectory,os.path.basename(sPathOld)),\
                                            dExif[sPathOld], tOptions.CpNoExif)
-  	 dNewPathRaw[sPathOld] = sPathNew
+         dNewPathRaw[sPathOld] = sPathNew
    else: # Output directory given, all the files will be written there
       for sPathOld in lPathOld:
-	 sFilepath = create_path_with_exif(sPathOld,  dExif[sPathOld], tOptions.CpNoExif)
-	 sFileBasename = os.path.basename(sFilepath)
-	 dNewPathRaw[sPathOld] = os.path.join(tOptions.OutputDirectory, sFileBasename)
+         sFilepath = create_path_with_exif(sPathOld,  dExif[sPathOld], tOptions.CpNoExif)
+         sFileBasename = os.path.basename(sFilepath)
+         dNewPathRaw[sPathOld] = os.path.join(tOptions.OutputDirectory, sFileBasename)
  
    return dNewPathRaw
          
@@ -211,10 +211,10 @@ def get_unique_path_for_images(dNewPathRawWithPossibleCollision):
    my_print ("Checking uniqueness of output file name", VERBOSE)
    dNewPathUnique = {}
    dNewOldPath = {}
-   for k, v in dNewPathRawWithPossibleCollision.iteritems():
+   for k, v in dNewPathRawWithPossibleCollision.items():
     dNewOldPath.setdefault(v, []).append(k)
 
-   lNewPath = dNewOldPath.keys() 
+   lNewPath = list(dNewOldPath.keys()) 
    for sNewPath in lNewPath:
       nNbrImageWithThisExif =  len(dNewOldPath[sNewPath])
       if nNbrImageWithThisExif == 1:
@@ -259,19 +259,18 @@ def duplicate_images(dPath, tOptions):
    
    # If requested, copy the input tree in the output directory
    if tOptions.CopyTree:	
-      for sNewPath in dPath.values():
-	 sDirectory = os.path.dirname(sNewPath)
-	 if not os.path.exists(sDirectory):
-	    os.makedirs(sDirectory)
-	 
+      for sNewPath in list(dPath.values()):
+         sDirectory = os.path.dirname(sNewPath)
+         if not os.path.exists(sDirectory):
+            os.makedirs(sDirectory)
 
    i = 1
-   nNbrImages = len(dPath.keys())
+   nNbrImages = len(list(dPath.keys()))
    if tOptions.Move:
       sMode = "Move"
    else:
       sMode = "Copy"
-   for sOldPath in dPath.keys():
+   for sOldPath in list(dPath.keys()):
       sNewPath = dPath[sOldPath]
       if tOptions.NoClobber and os.path.exists(sNewPath):
          my_print ("File '%s' already exists and --no-clobber option activated. Skipping renaming of '%s'." \
@@ -297,12 +296,12 @@ def exif_rename_files(tOptions):
    # Get all the images path
    dInputPathImages = get_images_path(tOptions)
 
-   if len(dInputPathImages.values()) == 0:
+   if len(list(dInputPathImages.values())) == 0:
       my_print("No image file identified.")
       exit(0)
       
    # Extract the EXIF information for all images
-   dExif = get_images_with_exif(dInputPathImages.keys(), tOptions.CpNoExif)
+   dExif = get_images_with_exif(list(dInputPathImages.keys()), tOptions.CpNoExif)
 
    # Create the path where the file will be copied
    dNewPathRaw = create_new_image_path(dExif, dInputPathImages, tOptions)
@@ -312,11 +311,10 @@ def exif_rename_files(tOptions):
 
    # If requested, copy the input tree in the output directory
    if tOptions.CopyTree:	
-      for sNewPath in dNewPathUnique.values():
-	 sDirectory = os.path.dirname(sNewPath)
-	 if not os.path.exists(sDirectory):
-	    os.makedirs(sDirectory)
-	 
+      for sNewPath in list(dNewPathUnique.values()):
+         sDirectory = os.path.dirname(sNewPath)
+         if not os.path.exists(sDirectory):
+            os.makedirs(sDirectory)
 
    # Duplicate files
    duplicate_images(dNewPathUnique, tOptions)
@@ -370,22 +368,22 @@ def get_command_line():
    options = parser.parse_args()
 
    if options.bVersion:
-      print "exif_rename.py version: " + VERSION
-      print "Copyright (C) 2014 Free Software Foundation, Inc."
-      print "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>."
-      print "This is free software: you are free to change and redistribute it."
-      print "There is NO WARRANTY, to the extent permitted by law.\n"
-      print "Written by Miguel Tremblay, http://ptaff.ca/miguel/"
+      print("exif_rename.py version: " + VERSION)
+      print("Copyright (C) 2014 Free Software Foundation, Inc.")
+      print("License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.")
+      print("This is free software: you are free to change and redistribute it.")
+      print("There is NO WARRANTY, to the extent permitted by law.\n")
+      print("Written by Miguel Tremblay, http://ptaff.ca/miguel/")
       exit(0)
    
    # Verify is Copy Tree is provided but without any place to copy the output, or if the input is 
    #  files and not a directroy
    if options.CopyTree and options.OutputDirectory is None:
-	 print "Error: option '--copy-recursive-tree' should be used with '--output-directory'. Please provide an output directory or do not use this option. Exiting."
-	 exit (2)
+         print("Error: option '--copy-recursive-tree' should be used with '--output-directory'. Please provide an output directory or do not use this option. Exiting.")
+         exit (2)
    # Verify it the output is a directory
    if options.OutputDirectory is not None and not os.path.isdir(options.OutputDirectory):
-      print "Error: Directory '%s' provided in '--output-directory' does not exist or is not a directory. Please provide a valid output directory. Exiting." % (options.OutputDirectory)
+      print("Error: Directory '%s' provided in '--output-directory' does not exist or is not a directory. Please provide a valid output directory. Exiting." % (options.OutputDirectory))
       exit (3)
 
    # Set the global verbosity
