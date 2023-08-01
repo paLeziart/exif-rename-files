@@ -1,6 +1,8 @@
 EXIF rename
 =============
 
+THIS IS A FORK OF [this repository.] (https://framagit.org/MiguelTremblay/exif_rename_files)
+
 Introduction
 ------------
 
