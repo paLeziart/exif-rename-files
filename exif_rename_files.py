@@ -154,7 +154,7 @@ def get_images_with_exif(lPathImages, bCpImageNoExif=False):
     return dExif
 
 
-def create_path_with_exif(sPath, sExif, bCpImageNoExif):
+def create_path_with_exif(sPath, sExif, bCpImageNoExif, useDateDirectory=False):
     """
     Create a file path with the exif date.
 
@@ -166,7 +166,15 @@ def create_path_with_exif(sPath, sExif, bCpImageNoExif):
     sExtension = os.path.splitext(sPath)[1]
     if sExif is not None:
         sNewFileName = sExif.replace(":", "-").replace(" ", "_") + sExtension
-        sPathNew = os.path.join(os.path.dirname(sPath), sNewFileName)
+
+        if useDateDirectory:
+            splitFileName = re.split("-|_", sNewFileName)
+            for i in range(2, -1, -1):
+                sNewFileName = splitFileName[i] + "/" + sNewFileName
+            sPathNew = sNewFileName
+        else:
+            sPathNew = os.path.join(os.path.dirname(sPath), sNewFileName)
+
         # Check if the file are not already been renamed correctly
         if sPathNew == sPath:
             my_print(
@@ -174,7 +182,10 @@ def create_path_with_exif(sPath, sExif, bCpImageNoExif):
                 VERBOSE,
             )
     elif bCpImageNoExif:
-        sPathNew = sPath
+        if useDateDirectory:
+            sPathNew = "NoExif/" + os.path.basename(sPath)
+        else:
+            sPathNew = sPath
 
     return sPathNew
 
@@ -217,9 +228,12 @@ def create_new_image_path(dExif, dInputDirectory, tOptions):
     else:  # Output directory given, all the files will be written there
         for sPathOld in lPathOld:
             sFilepath = create_path_with_exif(
-                sPathOld, dExif[sPathOld], tOptions.CpNoExif
+                sPathOld, dExif[sPathOld], tOptions.CpNoExif, tOptions.DateDirectory
             )
-            sFileBasename = os.path.basename(sFilepath)
+            if tOptions.DateDirectory:
+                sFileBasename = sFilepath
+            else:
+                sFileBasename = os.path.basename(sFilepath)
             dNewPathRaw[sPathOld] = os.path.join(
                 tOptions.OutputDirectory, sFileBasename
             )
@@ -305,7 +319,7 @@ def duplicate_images(dPath, tOptions):
     """
 
     # If requested, copy the input tree in the output directory
-    if tOptions.CopyTree:
+    if tOptions.CopyTree or tOptions.DateDirectory:
         for sNewPath in list(dPath.values()):
             sDirectory = os.path.dirname(sNewPath)
             if not os.path.exists(sDirectory):
@@ -404,6 +418,13 @@ def get_command_line():
         action="store",
         type=str,
         default=None,
+    )
+    parser.add_argument(
+        "--date-subdirs",
+        dest="DateDirectory",
+        help="Write resulting image files in subdirectories according to their date",
+        action="store_true",
+        default=False,
     )
     parser.add_argument(
         "--dry-run",
