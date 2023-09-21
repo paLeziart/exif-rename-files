@@ -36,9 +36,11 @@ import stat
 import shutil
 
 import exifread
+import exiftool
 
 VERSION = "1.0"
-FILETYPE = ["jpg", "JPG", "jpeg", "png", "PNG"]
+FILETYPE = ["jpg", "JPG", "jpeg", "png", "PNG", "MTS", "AVI", "m2ts", "mp4"]
+VIDEOTYPE = ["MTS", "AVI", "m2ts", "mp4"]
 # Verbose level:
 # 1 Normal mode
 # 2 Full debug
@@ -132,8 +134,16 @@ def get_images_with_exif(lPathImages, bCpImageNoExif=False):
         i = i + 1
         f = open(sImagePath, "rb")
         try:
-            tags = exifread.process_file(f, strict=False)
-            sExifDate = str(tags["EXIF DateTimeOriginal"])
+            if os.path.splitext(sImagePath)[1][1:] in VIDEOTYPE:
+                with exiftool.ExifToolHelper() as et:
+                    tags = et.get_metadata(sImagePath)[0]
+            else:
+                tags = exifread.process_file(f, strict=False)
+            if "EXIF DateTimeOriginal" in tags:
+                sExifDate = str(tags["EXIF DateTimeOriginal"])
+            else:
+                sExifDate = str(tags["File:FileModifyDate"]).split("+")[0]
+            # print(sExifDate)
             dExif[sImagePath] = sExifDate
         except KeyError as inst:
             my_print("No EXIF information found in file '" + sImagePath + "'", VERBOSE)
@@ -163,13 +173,13 @@ def create_path_with_exif(sPath, sExif, bCpImageNoExif, useDateDirectory=False):
     Returns the same directory as sPath, but with the filename replaced by
     the date values of the EXIF string.
     """
-    sExtension = os.path.splitext(sPath)[1]
+    sExtension = (os.path.splitext(sPath)[1]).lower()
     if sExif is not None:
         sNewFileName = sExif.replace(":", "-").replace(" ", "_") + sExtension
 
         if useDateDirectory:
             splitFileName = re.split("-|_", sNewFileName)
-            for i in range(2, -1, -1):
+            for i in range(1, -1, -1):
                 sNewFileName = splitFileName[i] + "/" + sNewFileName
             sPathNew = sNewFileName
         else:
@@ -337,7 +347,7 @@ def duplicate_images(dPath, tOptions):
             my_print(
                 "File '%s' already exists and --no-clobber option activated. Skipping renaming of '%s'."
                 % (sNewPath, sOldPath),
-                VERBOSE,
+                True,
             )
         else:
             sProcessing = "----\nProcessing [%s/%s]:" % (i, nNbrImages)
